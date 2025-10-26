@@ -4,14 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Typo Archive — Live Glyph Viewer</title>
-    <link rel="preload" href="../assets/MyFont.otf" as="font" type="font/otf" crossorigin>
-    <link rel="stylesheet" href="./glyph.css">
-    <title>Title</title>
+
+    <!-- ✅ 폰트: 절대경로 (GitHub Pages base 포함) -->
+    <link rel="preload" href="/kmuvcd2025_team/assets/MyFont.otf" as="font" type="font/otf" crossorigin>
+
+    <!-- ✅ CSS: 절대경로 (glyphs 폴더 안이라 ../ 대신 /kmuvcd2025_team/glyphs/ 로) -->
+    <link rel="stylesheet" href="/kmuvcd2025_team/glyphs/glyph.css">
+
 </head>
 
 <body>
 
-    <script type="module" src="./glyph.js"></script>
+    <!-- ✅ JS: 절대경로로 교체 -->
+    <script type="module" src="/kmuvcd2025_team/glyphs/glyph.js"></script>
+
 </body>
 
 </html>
