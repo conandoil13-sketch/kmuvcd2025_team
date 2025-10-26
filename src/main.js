@@ -50,7 +50,7 @@ Object.assign(LETTER_LINKS, {
 
 // 어떤 문자를 “지원 문자”로 취급할지 (링크 유무와 별개)
 // ▶ 허용 문자 전체: 영숫자, 공백, . , ! ? _ - @ # ( ) [ ] / & * % + : ;
-const SUPPORTED_CHAR_REGEX = /^[A-Za-z0-9\s.,!?_\-@#()%+\:;\/\[\]&*]$/;
+const SUPPORTED_CHAR_REGEX = /^[A-Za-z0-9\s.,!?_\-@#()/\[\]&*]$/;
 
 // WebUSB(vendor/product) 필터(예시). 실제 프린터로 교체 필요.
 const USB_FILTERS = [
