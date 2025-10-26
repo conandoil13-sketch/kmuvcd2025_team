@@ -4,9 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Typo Archive — Live Glyph Viewer</title>
-    <link rel="preload" href="/assets/MyFont.otf" as="font" type="font/otf" crossorigin>
+
+    <!-- ✅ 폰트 경로 수정 -->
+    <link rel="preload" href="/kmuvcd2025_team/assets/MyFont.otf" as="font" type="font/otf" crossorigin>
+
+    <!-- ✅ CSS는 반드시 상대경로 (./src/...) -->
     <link rel="stylesheet" href="./src/style.css">
-    <title>Title</title>
+
+    <!-- ✅ JS도 상대경로 -->
+    <script type="module" src="./src/main.js"></script>
 </head>
 
 <body>
