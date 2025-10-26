@@ -332,7 +332,7 @@ async function handleUsbPrint() {
             GS, 0x56, 0x00               // Full cut (기기에 따라 무시될 수 있음)
         ];
 
-        // 일부 장치는 endpoint 번호가 1 또는 2일 수 있음. 필요하면 바꾸세요.
+        // 일부 장치는 endpoint 번호가 1 또는 2일 수 있음. 필요하면 바꾸세요!
         await device.transferOut(1, new Uint8Array(bytes));
         alert("전송 완료! (모델에 따라 커맨드 수정 필요)");
     } catch (err) {
