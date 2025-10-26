@@ -6,7 +6,7 @@ const DEFAULT_MAX_CHARS = 40;
 const DEFAULT_FONT_SIZE = 160; // 글자 크기 슬라이더 기본값(px)
 
 // 입력 허용 안내(토스트에 노출될 문자열)
-const ALLOWED_HINT = "A–Z, 0–9, 공백, . , ! ? _ - @ # ( ) [ ] / & * % + : ;";
+const ALLOWED_HINT = "A–Z, 0–9, 공백, . , ! ? _ - @ # ( ) [ ] / & * ";
 
 // 링크 매핑: 문자 → 하위페이지 경로
 // 필요에 따라 추가/수정하세요. (대소문자 모두 커버)
