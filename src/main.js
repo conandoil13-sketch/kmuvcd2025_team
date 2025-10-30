@@ -35,7 +35,6 @@ const LETTER_PRINTS = {
     "@": "glyphs/at.png",
     "#": "glyphs/hash.png"
 };
-
 // ▶ 추가 매핑 (& * / ( ) [ ] : 닫는 괄호는 여는 괄호와 동일 페이지)
 Object.assign(LETTER_PRINTS, {
     "&": "glyphs/ampersand.png",
@@ -70,13 +69,12 @@ const linkedCountEl = $("#linkedCount");
 const unsupportedCountEl = $("#unsupportedCount");
 const supportedListEl = $("#supportedList");
 const clearBtn = $("#clearBtn");
-const printBtn = $("#printBtn"); // ← 이게 없어도 안전하게 처리할 거야
-// 글자 크기 슬라이더 요소
+const printBtn = $("#printBtn"); // (없어도 안전)
 const fontSizeEl = $("#fontSizeInput");
 const fontSizeLabelEl = $("#fontSizeLabel");
 
 /* =========================
- * Toast (임시 알림)
+ * Toast
  * ========================= */
 let __toastTimer = null;
 function showToast(msg) {
@@ -109,24 +107,21 @@ let MAX_CHARS = DEFAULT_MAX_CHARS;
  * Init
  * ========================= */
 function init() {
-    // 초기 제한값 동기화
+    // 제한값 동기화
     inputEl.maxLength = MAX_CHARS;
     charLimitEl.textContent = MAX_CHARS;
 
-    // 지원 문자 리스트 표시
     renderSupportedList();
 
-    // 이벤트 바인딩
+    // 입력 이벤트
     inputEl.addEventListener("input", handleInput);
     limitEl.addEventListener("change", handleLimitChange);
     trackingEl.addEventListener("input", handleTrackingChange);
     leadingEl.addEventListener("input", handleLeadingChange);
     clearBtn.addEventListener("click", () => { inputEl.value = ""; renderText(""); });
 
-    // ✅ 버튼이 HTML에서 제거되어도 안전하도록 null 가드
-    if (printBtn) {
-        printBtn.addEventListener("click", handleUsbPrint);
-    }
+    // 버튼 null 가드
+    if (printBtn) printBtn.addEventListener("click", handleUsbPrint);
 
     // 허용 외 문자 타이핑 차단
     inputEl.addEventListener("beforeinput", (ev) => {
@@ -183,11 +178,7 @@ function init() {
         document.documentElement.style.setProperty("--fontSizePx", DEFAULT_FONT_SIZE);
     }
 
-    // OS 인쇄 버튼(있을 때만 연결)
-    // ── 기존 printOSBtn 핸들러 전체 교체 ──
-    // 브라우저 인쇄 버튼 핸들러 교체/추가
-    // 운영체제 인쇄 버튼
-    // 운영체제 인쇄 버튼: 화면 텍스트 → 캔버스 → 새 창 미리보기(드라이버 대화상자)
+    // 운영체제 인쇄(드라이버 미리보기) — 숨은 iframe 방식(팝업 없이)
     const printOSBtn = document.getElementById('printOSBtn');
     if (printOSBtn) {
         printOSBtn.addEventListener('click', async () => {
@@ -195,25 +186,24 @@ function init() {
                 const text = (inputEl?.value || '').trim();
                 if (!text) { alert('인쇄할 텍스트가 없습니다.'); return; }
 
-                // 화면 변수 반영 (폰트/행간)
+                // 화면 CSS 변수 읽어 동일 타이포로 렌더
                 const cs = getComputedStyle(document.documentElement);
                 const fontSizePx = parseInt(cs.getPropertyValue('--fontSizePx')) || 160;
                 const lineHeight = parseFloat(cs.getPropertyValue('--leading')) || 1.0;
 
-                // 80mm 용지 프린터 기준: 유효 폭 560px 정도가 보편적 (모델별 512/554/576로 미세조정)
                 const canvas = await renderTextToCanvasBitmap(text, {
                     fontFamily: "MyFont",
                     fontSizePx,
                     lineHeight,
-                    maxWidthPx: 560,   // 모델에 따라 512/554/576/832 등으로 조정
+                    maxWidthPx: 576,  // 프린터 폭에 맞춰 조정 (512/554/576/832 등)
                     marginX: 8,
                     marginY: 8,
                     threshold: 190
                 });
 
-                // 새 창 OS 드라이버 미리보기
-                openPrintPreviewFromCanvas(canvas, {
-                    pageWidthMM: 80,   // 58mm 프린터면 58로 바꿔도 됨 (미리보기 CSS 힌트)
+                // 바로 드라이버 대화상자
+                printViaHiddenFrameFromCanvas(canvas, {
+                    pageWidthMM: 80, // 58mm 프린터면 58로
                     marginMM: 0
                 });
             } catch (e) {
@@ -222,9 +212,6 @@ function init() {
             }
         });
     }
-
-
-
 
     // 스케일 적용
     autoScale();
@@ -247,10 +234,7 @@ function renderSupportedList() {
         supportedListEl.appendChild(li);
     });
 }
-
-function handleInput(e) {
-    renderText(e.target.value);
-}
+function handleInput(e) { renderText(e.target.value); }
 
 function renderText(str) {
     charCountEl.textContent = str.length;
@@ -310,7 +294,7 @@ function ensurePrintFrame() {
     return f;
 }
 
-// 파일 유형별 인쇄
+// 파일 유형별 인쇄(링크된 개별 자산용)
 function printAsset(url) {
     const ext = url.split("?")[0].split("#")[0].split(".").pop().toLowerCase();
     const frame = ensurePrintFrame();
@@ -318,7 +302,7 @@ function printAsset(url) {
     const doPrint = () => {
         try {
             const w = frame.contentWindow;
-            setTimeout(() => { w.focus(); w.print(); }, 80); // Safari 안정성
+            setTimeout(() => { w.focus(); w.print(); }, 80);
         } catch (e) {
             alert("인쇄 미리보기 호출 실패: " + e.message);
         }
@@ -381,7 +365,6 @@ function printAsset(url) {
         alert("지원하지 않는 인쇄 형식: " + ext);
     }
 }
-
 function escapeHtml(s) {
     return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
@@ -400,17 +383,13 @@ function handleLimitChange() {
         renderText(inputEl.value);
     }
 }
-
 function handleTrackingChange() {
     document.documentElement.style.setProperty("--tracking", trackingEl.value);
 }
-
 function handleLeadingChange() {
     const v = Math.max(50, Math.min(300, parseInt(leadingEl.value || "100", 10)));
     document.documentElement.style.setProperty("--leading", (v / 100).toString());
 }
-
-// 글자 크기 슬라이더
 function handleFontSizeChange() {
     const raw = fontSizeEl ? parseInt(fontSizeEl.value || String(DEFAULT_FONT_SIZE), 10) : DEFAULT_FONT_SIZE;
     const v = Math.max(24, Math.min(300, Number.isFinite(raw) ? raw : DEFAULT_FONT_SIZE));
@@ -420,7 +399,7 @@ function handleFontSizeChange() {
 }
 
 /* =========================
- * Autoscale (27" 기준 → 현재 뷰에 맞춤)
+ * Autoscale
  * ========================= */
 function autoScale() {
     const vw = window.innerWidth;
@@ -431,54 +410,112 @@ function autoScale() {
     document.documentElement.style.setProperty("--scale", scale.toString());
 }
 
-/* =========================
- * WebUSB Thermal Print — Unicode/OTF 안전 래스터 인쇄
- * ========================= */
+/* =========================================================
+ * 폰트 로딩 보장 + 텍스트 → 캔버스(래스터) + 인쇄 유틸
+ * ========================================================= */
 
-/** 1) 폰트 로드 후 캔버스에 텍스트 렌더 + 1비트화 */
-async function renderTextToCanvasBitmap(text, {
-    fontFamily = "MyFont",
-    fontSizePx = 160,        // --fontSizePx 반영
-    lineHeight = 1.0,        // --leading 반영
-    maxWidthPx = 560,        // 80mm 프린터 유효폭(모델별 512/554/576 등 조절)
-    marginX = 8,
-    marginY = 8,
-    threshold = 190          // 1비트 임계값(180~210 사이 취향 조절)
-} = {}) {
-    const txt = String(text ?? "");
-    const lines = txt.split("\n");
+/* 1) 커스텀 폰트 로딩 보장(강화판) */
+async function ensureMyFontLoaded(fontFamily = "MyFont", sizePx = 160) {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const tryLoad = async sz => { try { await document.fonts.load(`normal ${Math.round(sz)}px "${fontFamily}"`); } catch { } };
 
-    // 폰트 로드 대기(안 하면 시스템 폰트로 찍힐 수 있음)
-    try { await document.fonts.load(`${fontSizePx}px "${fontFamily}"`); } catch { }
+    await Promise.all([tryLoad(sizePx), tryLoad(sizePx * dpr), tryLoad(1), tryLoad(16), tryLoad(48)]);
+    try { await document.fonts.ready; } catch { }
 
-    // 측정용 캔버스
+    const span = document.createElement('span');
+    span.textContent = 'Aa가각123!?';
+    span.style.cssText = `
+    position:absolute;left:-9999px;top:-9999px;
+    font:${sizePx}px "${fontFamily}", system-ui, sans-serif;
+    white-space:nowrap; user-select:none;`;
+    document.body.appendChild(span);
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    try { span.remove(); } catch { }
+}
+
+/* 2) 텍스트 → 캔버스 비트맵(자간/행간 반영, 1비트화 포함) */
+async function renderTextToCanvasBitmap(
+    text,
+    {
+        fontFamily = "MyFont",
+        fontSizePx = 160,
+        lineHeight = 1.0,
+        maxWidthPx = 576,
+        marginX = 8,
+        marginY = 8,
+        threshold = 190,
+    } = {}
+) {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    await ensureMyFontLoaded(fontFamily, fontSizePx);
+
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.font = `${fontSizePx}px "${fontFamily}", system-ui, sans-serif`;
-    ctx.textBaseline = "alphabetic";
 
-    let maxLineW = 0;
-    for (const ln of lines) {
-        const w = ctx.measureText(ln).width;
-        maxLineW = Math.max(maxLineW, Math.ceil(w));
+    // CSS 변수에서 자간 읽기 (1000분율 → px)
+    const rs = getComputedStyle(document.documentElement);
+    const tracking = parseFloat(rs.getPropertyValue("--tracking")) || 0;
+    const trackingPx = (fontSizePx * tracking) / 1000;
+
+    // 폰트 지정
+    const cssFont = `${fontSizePx * dpr}px "${fontFamily}", system-ui, sans-serif`;
+    ctx.font = cssFont;
+
+    // 단어단위 줄바꿈
+    const words = String(text ?? "").split(/(\s+)/);
+    const lines = [];
+    const maxTextWidth = maxWidthPx - marginX * 2;
+    const measure = (s) => {
+        if (!s) return 0;
+        const base = ctx.measureText(s).width / dpr;
+        const extra = Math.max(0, s.length - 1) * trackingPx;
+        return base + extra;
+    };
+    let line = "";
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i];
+        const w = measure(testLine);
+        if (w > maxTextWidth && line) {
+            lines.push(line);
+            line = words[i].trimStart();
+        } else {
+            line = testLine;
+        }
     }
-    const contentW = Math.min(maxLineW, maxWidthPx - marginX * 2);
-    const lineH = Math.ceil(fontSizePx * lineHeight);
-    const contentH = Math.max(lineH, lineH * lines.length);
+    if (line) lines.push(line);
 
-    canvas.width = Math.min(maxWidthPx, Math.max(1, contentW + marginX * 2));
-    canvas.height = Math.max(1, contentH + marginY * 2);
+    // 캔버스 크기
+    const lineH = fontSizePx * lineHeight;
+    const width = Math.ceil(maxWidthPx * dpr);
+    const height = Math.ceil((marginY * 2 + lineH * lines.length) * dpr);
+    canvas.width = width;
+    canvas.height = height;
 
-    // 흰 배경
+    // 배경/폰트 재지정 (크기 바뀌면 다시 지정하는 게 안전)
     ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 검정 텍스트
+    ctx.fillRect(0, 0, width, height);
+    ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#000";
-    let y = marginY + fontSizePx; // 베이스라인
+    ctx.font = cssFont;
+
+    // 웜업 드로우(폴백 방지)
+    ctx.globalAlpha = 0.001;
+    ctx.fillText("warmup", -9999, -9999);
+    ctx.globalAlpha = 1;
+
+    // 실제 그리기 (자간 수동 적용)
+    let y = marginY * dpr + fontSizePx * dpr;
+    const x0 = marginX * dpr;
     for (const ln of lines) {
-        ctx.fillText(ln, marginX, y);
-        y += lineH;
+        let x = x0;
+        for (let i = 0; i < ln.length; i++) {
+            const ch = ln[i];
+            ctx.fillText(ch, x, y);
+            const adv = ctx.measureText(ch).width + trackingPx * dpr;
+            x += adv;
+        }
+        y += lineH * dpr;
     }
 
     // 1비트 임계 변환
@@ -496,7 +533,7 @@ async function renderTextToCanvasBitmap(text, {
     return canvas;
 }
 
-/** 2) 캔버스 → ESC/POS 래스터(GS v 0) 바디 */
+/* 3) Canvas → ESC/POS 래스터(GS v 0) */
 function canvasToEscPosRaster(canvas) {
     const w = canvas.width, h = canvas.height;
     const rowBytes = Math.ceil(w / 8);
@@ -505,7 +542,6 @@ function canvasToEscPosRaster(canvas) {
         rowBytes & 0xFF, (rowBytes >> 8) & 0xFF,
         h & 0xFF, (h >> 8) & 0xFF
     ]);
-
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const rgba = ctx.getImageData(0, 0, w, h).data;
     const body = new Uint8Array(rowBytes * h);
@@ -519,9 +555,9 @@ function canvasToEscPosRaster(canvas) {
                 let on = 0; // 1=검정 점
                 if (x < w) {
                     const idx = (y * w + x) * 4;
-                    on = (rgba[idx] === 0) ? 1 : 0; // 위 1비트화에서 0=검정, 255=백
+                    on = (rgba[idx] === 0) ? 1 : 0; // 0=검정(앞서 1비트화)
                 }
-                byte |= (on << (7 - bit)); // MSB 먼저
+                byte |= (on << (7 - bit));
             }
             body[p++] = byte;
         }
@@ -529,7 +565,7 @@ function canvasToEscPosRaster(canvas) {
     return { header, body };
 }
 
-/** 3) 자동 인터페이스/엔드포인트 탐색 + 전송 래퍼 */
+/* 4) WebUSB: 인터페이스/엔드포인트 탐색 + 전송 */
 async function usbPrintRaster(canvas) {
     if (!('usb' in navigator)) {
         throw new Error('이 브라우저는 WebUSB를 지원하지 않습니다. 데스크톱 Chrome + HTTPS를 사용해주세요.');
@@ -542,16 +578,14 @@ async function usbPrintRaster(canvas) {
     if (device.configuration == null) await device.selectConfiguration(1);
 
     // OUT 엔드포인트 탐색
-    let ifaceNumber = null, outEp = null;
+    let ifaceNumber = null, outEp = null, altSet = 0;
     for (const iface of device.configuration.interfaces) {
         for (const alt of iface.alternates) {
             const ep = alt.endpoints?.find(e => e.direction === 'out');
             if (ep) {
                 ifaceNumber = iface.interfaceNumber;
                 outEp = ep.endpointNumber;
-                if ((iface.alternate?.alternateSetting ?? 0) !== (alt.alternateSetting ?? 0)) {
-                    await device.selectAlternateInterface(iface.interfaceNumber, alt.alternateSetting ?? 0);
-                }
+                altSet = alt.alternateSetting ?? 0;
                 break;
             }
         }
@@ -560,22 +594,20 @@ async function usbPrintRaster(canvas) {
     if (ifaceNumber == null || outEp == null) throw new Error('OUT 엔드포인트를 찾지 못했습니다.');
 
     await device.claimInterface(ifaceNumber);
+    try { await device.selectAlternateInterface(ifaceNumber, altSet); } catch { }
 
     // 초기화 → 래스터 전송 → 줄피드/컷
     const ESC = 0x1B, GS = 0x1D;
     await device.transferOut(outEp, new Uint8Array([ESC, 0x40])); // Initialize
-
     const { header, body } = canvasToEscPosRaster(canvas);
     await device.transferOut(outEp, header);
     await device.transferOut(outEp, body);
-
     await device.transferOut(outEp, new Uint8Array([0x0A, 0x0A])); // LF x2
     try { await device.transferOut(outEp, new Uint8Array([GS, 0x56, 0x00])); } catch { }
 }
 
-/** 4) 입력 텍스트를 화면 설정과 맞춰 래스터로 인쇄 */
+/* 5) 입력 텍스트 → 캔버스 → WebUSB 래스터 인쇄 */
 async function usbPrintCanvasText(text) {
-    // 화면 CSS 변수 반영
     const cs = getComputedStyle(document.documentElement);
     const fontSizePx = parseInt(cs.getPropertyValue('--fontSizePx')) || 160;
     const lineHeight = parseFloat(cs.getPropertyValue('--leading')) || 1.0;
@@ -584,16 +616,15 @@ async function usbPrintCanvasText(text) {
         fontFamily: "MyFont",
         fontSizePx,
         lineHeight,
-        maxWidthPx: 560,   // 필요 시 512/554/576/832 등 장비폭으로 조정
+        maxWidthPx: 560,   // 장비폭에 맞춰 조정
         marginX: 8,
         marginY: 8,
         threshold: 190
     });
-
     await usbPrintRaster(canvas);
 }
 
-/** 5) 기존 핸들러 교체: OTF/한글 안전 래스터 드라이버 출력 */
+/* 6) 기존 핸들러 대체: 드라이버 출력(WebUSB) */
 async function handleUsbPrint() {
     try {
         const text = (inputEl?.value || '').trim();
@@ -605,46 +636,62 @@ async function handleUsbPrint() {
         alert('프린터 전송 중 문제 발생: ' + (err?.message || err));
     }
 }
+
 /* =========================
- * Driver Preview (OS Print Dialog) from Canvas
+ * OS Print Dialog(브라우저 프린트) 유틸
  * ========================= */
-function openPrintPreviewFromCanvas(canvas, {
-    pageWidthMM = 80,       // 드라이버에서 선택할 용지 폭(mm). 미리보기용 CSS에 참고값으로만 사용
-    marginMM = 0,           // 여백 0
+function printViaHiddenFrameFromCanvas(canvas, {
+    pageWidthMM = 80,
+    marginMM = 0,
+    autoRemoveDelay = 2000,
 } = {}) {
-    // 1) 클릭 제스처 내에서 새 창을 "즉시" 열어야 팝업 차단에 안 걸림
-    const w = window.open('', '_blank', 'noopener,noreferrer,width=720,height=900');
-    if (!w) { alert('팝업이 차단되었습니다. 브라우저 팝업 허용을 켜주세요.'); return; }
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(frame);
 
-    // 2) 캔버스를 PNG로 넣기
     const dataURL = canvas.toDataURL('image/png');
-
-    // 3) 프린트 전용 HTML 주입
-    w.document.open();
-    w.document.write(`<!doctype html>
+    const html = `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>Print Preview</title>
+<title>Print</title>
 <style>
   @page { size: ${pageWidthMM}mm auto; margin: ${marginMM}mm; }
-  html, body { margin:0; padding:0; background:#fff; }
-  img { display:block; width:100%; height:auto; image-rendering: -webkit-optimize-contrast; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  img { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
   @media print {
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>
 <body>
-  <img id="pp" alt="preview" src="${dataURL}">
+  <img id="pp" alt="">
   <script>
-    // 이미지 로드 후 인쇄
-    const img = document.getElementById('pp');
-    img.onload = () => { setTimeout(()=>window.print(), 20); };
-    // 인쇄 창 자동 닫기 원하면 아래 주석 해제
-    // window.onafterprint = () => window.close();
+    (function(){
+      const img = document.getElementById('pp');
+      img.onload = function () {
+        setTimeout(function(){
+          window.focus();
+          window.print();
+        }, 20);
+      };
+      img.src = ${JSON.stringify(dataURL)};
+      window.onafterprint = function(){
+        try { parent.postMessage({ __fromPrintFrame: true }, '*'); } catch(e){}
+      };
+    })();
   </script>
 </body>
-</html>`);
-    w.document.close();
+</html>`;
+    frame.srcdoc = html;
+
+    const onMsg = (ev) => {
+        if (ev && ev.data && ev.data.__fromPrintFrame) {
+            window.removeEventListener('message', onMsg);
+            setTimeout(() => { try { frame.remove(); } catch (_) { } }, 0);
+        }
+    };
+    window.addEventListener('message', onMsg);
+    setTimeout(() => { try { frame.remove(); } catch (_) { } }, autoRemoveDelay);
 }
