@@ -291,7 +291,7 @@ button.ghost {
     /* 캔버스 내부 원하는 위치에 고정 */
     left: var(--pv-left, 160px);
     top: var(--pv-top, 280px);
-    width: var(--pv-w, 2400px);
+    width: var(--pv-w, 1600px);
     height: var(--pv-h, 760px);
     overflow: hidden;
     /* 박스 밖은 잘라냄 */
@@ -410,4 +410,19 @@ button.ghost {
     .foot {
         display: none !important;
     }
+}
+
+/* 드라이버 미리보기 캔버스 */
+#output canvas.preview {
+    display: block;
+    transform-origin: top left;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
+    /* 저해상 점열이 또렷 */
+}
+
+/* 상단 입력창 너비 확장 */
+#textInput {
+    width: min(60vw, 500px);
+    /* 필요하면 720→900 조정 */
 }

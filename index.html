@@ -40,6 +40,16 @@
                 <span>행간</span>
                 <input id="leadingInput" type="range" min="80" max="200" value="100" />
             </label>
+            <label class="field narrow">
+                <span>인쇄 최적화 모드</span>
+                <input id="driverPreviewToggle" type="checkbox" />
+            </label>
+
+            <label class="field narrow" id="previewScaleBox" style="display:none">
+                <span>배율</span>
+                <input id="previewScaleInput" type="range" min="50" max="300" value="100" />
+                <output id="previewScaleLabel">100%</output>
+            </label>
             <button id="clearBtn" type="button" class="ghost">지우기</button>
         </div>
         <!-- 화면에는 안 보이는 인쇄 전용 영역 -->
