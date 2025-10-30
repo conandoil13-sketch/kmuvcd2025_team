@@ -11,8 +11,7 @@
     <!-- ✅ CSS는 반드시 상대경로 (./src/...) -->
     <link rel="stylesheet" href="./src/style.css">
 
-    <!-- ✅ JS도 상대경로 -->
-    <script type="module" src="./src/main.js"></script>
+
 </head>
 
 <body>
@@ -42,7 +41,6 @@
                 <input id="leadingInput" type="range" min="80" max="200" value="100" />
             </label>
             <button id="clearBtn" type="button" class="ghost">지우기</button>
-            <button id="printBtn" type="button" class="primary">열전사 출력</button>
         </div>
         <!-- 화면에는 안 보이는 인쇄 전용 영역 -->
         <pre id="printArea" aria-hidden="true" style="position:absolute; left:-9999px;"></pre>
@@ -54,7 +52,9 @@
     <main class="stage" role="main">
         <div id="canvasSizer">
             <!-- 27" iMac(2560×1440)을 기준 캔버스로 가정하고 스케일링 -->
-            <section id="output" aria-live="polite" aria-label="렌더링 영역"></section>
+            <div id="outputViewport">
+                <section id="output" aria-live="polite" aria-label="렌더링 영역"></section>
+            </div>
         </div>
         <aside class="sidebar">
             <h2>상태</h2>
@@ -80,10 +80,6 @@
             </details>
         </aside>
     </main>
-
-    <footer class="foot">
-        <small>© 2025 Typo Archive. Custom font demo.</small>
-    </footer>
     <script type="module" src="./src/main.js"></script>
 </body>
 

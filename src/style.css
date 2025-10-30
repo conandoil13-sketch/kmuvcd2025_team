@@ -1,7 +1,9 @@
 @font-face {
     font-family: "MyFont";
-    src: url("assets/MyFont.otf") format("opentype");
+    src: url("/kmuvcd2025_team/assets/MyFont.otf") format("opentype");
     font-display: swap;
+    font-weight: normal;
+    font-style: normal;
 }
 
 :root {
@@ -14,10 +16,14 @@
 
     /* 27" iMac 기준 스케일 (JS에서 업데이트) */
     --scale: 1;
+
+    /* 타이포 제어 변수 */
     --tracking: 0;
     /* em 단위 letter-spacing 백분율 */
     --leading: 1;
     /* line-height 배수 (1.0=100) */
+    --fontSizePx: 160;
+    /* 슬라이더가 제어할 기준 폰트 크기(px) */
 }
 
 * {
@@ -46,6 +52,7 @@ body {
     top: 0;
     background: rgba(233, 233, 233, 0.9);
     backdrop-filter: blur(6px);
+    z-index: 1000;
 }
 
 .brand {
@@ -114,6 +121,7 @@ button.ghost {
     grid-template-columns: 1fr 360px;
     gap: 0;
     min-height: calc(100dvh - 64px);
+    position: relative;
 }
 
 .sidebar {
@@ -136,26 +144,25 @@ button.ghost {
 }
 
 #canvasSizer {
-    /* 27" iMac 2560×1440 기준 캔버스 박스, 자동 스케일 */
     width: 2560px;
+    /* 27" iMac 2560×1440 기준 */
     height: 1440px;
     transform-origin: top left;
     transform: scale(var(--scale));
-    /* 가운데 정렬 */
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 0;
+    pointer-events: auto;
 }
 
 #output {
     width: 90%;
     max-width: 2200px;
-    /* 안전 마진 */
     min-height: 50vh;
     font-family: "MyFont", system-ui, sans-serif;
     font-weight: 400;
-    /* 스케일 대비 기본 폰트 크기 (대제목 수준) */
-    font-size: clamp(24px, 8vw, 160px);
+    font-size: calc(var(--fontSizePx) * 1px);
     line-height: var(--leading);
     letter-spacing: calc(var(--tracking) * 1em / 1000);
     word-break: break-word;
@@ -217,50 +224,112 @@ button.ghost {
     color: var(--muted);
 }
 
-/* 프린트 미리보기(브라우저 인쇄) 대비 */
-@media print {
+/* 화면에서는 printArea 숨김 */
+/* 화면에서는 printArea 숨김 */
+@media screen {
+    #printArea {
+        display: none;
+    }
+}
 
+/* ── 브라우저 인쇄용 레이아웃 ── */
+@media print {
+    @page {
+        size: auto;
+        margin: 0;
+    }
+
+    /* 프린터 기본용지, 여백 0 */
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+    }
+
+    /* UI 숨기기 */
     .topbar,
     .sidebar,
     .foot {
         display: none !important;
     }
 
-    .stage {
-        display: block;
-    }
-
+    /* 화면 캔버스는 프린트에 쓰지 않음 (스케일 변환 등으로 위치 오차 발생) */
     #canvasSizer {
-        transform: none;
-        width: auto;
-        height: auto;
+        display: none !important;
     }
 
-    #output {
-        font-size: 48pt;
+    /* 프린트 대상만 보이게 */
+    #printArea {
+        display: block !important;
+        position: relative !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: visible !important;
+    }
+
+    /* 출력 복제본은 우리가 JS에서 위치 지정(absolute) */
+    #outputPrint {
+        transform: none !important;
     }
 }
 
-:root {
-    /* ...기존 변수들 */
-    --fontSizePx: 160;
-    /* 슬라이더가 제어할 기준 폰트 크기(px) */
+@media print {
+    #senseBox {
+        display: none !important;
+    }
 }
 
-/* ... */
+/* 캔버스는 그대로 (이미 있음) */
+#canvasSizer {
+    position: relative;
+}
 
+/* ✅ 출력구역 마스크 박스 */
+#outputViewport {
+    position: absolute;
+    /* 캔버스 내부 원하는 위치에 고정 */
+    left: var(--pv-left, 160px);
+    top: var(--pv-top, 280px);
+    width: var(--pv-w, 2400px);
+    height: var(--pv-h, 760px);
+    overflow: hidden;
+    /* 박스 밖은 잘라냄 */
+    border-radius: 12px;
+    /* 필요 시 */
+    /* 개발 중 테두리 확인용 (완성 시 제거) */
+    outline: 1px dashed rgba(56, 103, 255, .35);
+    outline-offset: -1px;
+    z-index: 0;
+}
+
+/* 출력 텍스트는 박스 안쪽 좌상단 기준으로 흐르게 */
 #output {
-    /* ...기존 속성 유지하되 font-size만 교체 */
-    font-size: calc(var(--fontSizePx) * 1px);
-    line-height: var(--leading);
-    letter-spacing: calc(var(--tracking) * 1em / 1000);
-    /* 나머지 동일 */
+    position: absolute;
+    inset: var(--pv-pad, 0px);
+    /* 안쪽 여백 필요하면 --pv-pad로 */
+    width: calc(100% - 2*var(--pv-pad, 0px));
 }
 
-@font-face {
-    font-family: "MyFont";
-    src: url("/assets/MyFont.otf") format("opentype");
-    font-display: swap;
+/* ⬇️ (선택) 소프트 마스크 가장자리 16px 페더 */
+#outputViewport.soft-mask {
+    -webkit-mask-image:
+        radial-gradient(16px 16px at top left, #0000 0, #0000 70%, #000 71%),
+        radial-gradient(16px 16px at top right, #0000 0, #0000 70%, #000 71%),
+        radial-gradient(16px 16px at bottom left, #0000 0, #0000 70%, #000 71%),
+        radial-gradient(16px 16px at bottom right, #0000 0, #0000 70%, #000 71%),
+        linear-gradient(#000, #000);
+    -webkit-mask-composite: source-over, source-over, source-over, source-over, xor;
+    mask-composite: exclude;
+    /* 일부 브라우저는 무시 */
+}
+
+/* 프린트 시에도 마스크 유지(가능한 브라우저에서) */
+@media print {
+    #outputViewport.soft-mask {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 }
 
 /* 화면에서는 printArea 숨김 */
@@ -270,52 +339,75 @@ button.ghost {
     }
 }
 
-/* 인쇄 시: 텍스트만 꽉 채워서 찍기 */
+/* 인쇄 시: UI 숨기고 printArea만 보이게 */
 @media print {
     @page {
-        size: 80mm auto;
+        size: auto;
         margin: 0;
     }
 
-    /* 롤지 폭에 맞게(폭은 프린터 드라이버에서 80mm 선택) */
     html,
     body {
-        padding: 0;
         margin: 0;
+        padding: 0;
         background: #fff;
     }
 
-    * {
-        visibility: hidden !important;
+    .topbar,
+    .sidebar {
+        display: none !important;
     }
 
-    #printArea,
-    #printArea * {
-        visibility: visible !important;
+    /* 원본 캔버스는 프린트에 사용하지 않음 (스케일 영향 제거) */
+    #canvasSizer {
+        display: none !important;
     }
 
     #printArea {
-        display: block;
-        font-family: "MyFont", system-ui, sans-serif;
-        /* 네 OTF */
-        font-size: 14pt;
-        /* 프린터 해상도 따라 12~16pt 테스트 */
-        line-height: 1.25;
-        /* 감열지 가독성 */
-        white-space: pre-wrap;
-        /* 줄바꿈 유지 */
-        word-break: break-word;
-        padding: 6mm 4mm;
-        /* 좌우 여백 */
-        width: 72mm;
-        /* 실인쇄 영역(프린터마다 보정) */
+        display: block !important;
+        position: relative !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: visible !important;
     }
 }
 
-/* 폰트 임베드: GitHub Pages 기준 절대경로 */
-@font-face {
-    font-family: "MyFont";
-    src: url("/kmuvcd2025_team/assets/MyFont.otf") format("opentype");
-    font-weight: normal;
-    font-style: normal;
+/* ── 프린트에서 반드시 화면 안으로 끌어오기 ── */
+@media print {
+    #printArea {
+        display: block !important;
+        position: static !important;
+        /* ← relative 해도 OK, 핵심은 static/left 초기화 */
+        left: auto !important;
+        /* ← 화면 밖으로 밀었던 -9999px 무력화 */
+        top: auto !important;
+        transform: none !important;
+        width: 400vw !important;
+        height: 200vh !important;
+        overflow: visible !important;
+    }
+
+    /* 복제해 넣은 출력 박스 id와 일치시켜 초기화 */
+    #outputViewportPrint {
+        position: static !important;
+        /* 화면 좌표 고정(absolute/fixed) 제거 */
+        left: auto !important;
+        top: auto !important;
+        width: auto !important;
+        height: auto !important;
+        transform: none !important;
+        outline: none !important;
+        /* 개발용 테두리 숨김(선택) */
+    }
+
+    /* 원본은 숨김 유지 */
+    #canvasSizer {
+        display: none !important;
+    }
+
+    .topbar,
+    .sidebar,
+    .foot {
+        display: none !important;
+    }
 }
