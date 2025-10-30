@@ -6,6 +6,13 @@
     font-style: normal;
 }
 
+html,
+body {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    height: 100%;
+}
+
 :root {
     --bg: #ffffff;
     --fg: #000000;
