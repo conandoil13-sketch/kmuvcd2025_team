@@ -11,8 +11,8 @@
     <!-- ✅ CSS는 반드시 상대경로 (./src/...) -->
 
     <!-- ✅ JS도 상대경로 -->
-  <script type="module" crossorigin src="/kmuvcd2025_team/assets/index-D_ei8UvL.js"></script>
-  <link rel="stylesheet" crossorigin href="/kmuvcd2025_team/assets/index-AdZYHAAR.css">
+  <script type="module" crossorigin src="/kmuvcd2025_team/assets/index-C4exOXTt.js"></script>
+  <link rel="stylesheet" crossorigin href="/kmuvcd2025_team/assets/index-DleFEQp-.css">
 </head>
 
 <body>
@@ -44,6 +44,11 @@
             <button id="clearBtn" type="button" class="ghost">지우기</button>
             <button id="printBtn" type="button" class="primary">열전사 출력</button>
         </div>
+        <!-- 화면에는 안 보이는 인쇄 전용 영역 -->
+        <pre id="printArea" aria-hidden="true" style="position:absolute; left:-9999px;"></pre>
+
+        <button id="printOSBtn">운영체제로 인쇄</button>
+
     </header>
 
     <main class="stage" role="main">
