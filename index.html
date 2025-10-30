@@ -44,6 +44,11 @@
             <button id="clearBtn" type="button" class="ghost">지우기</button>
             <button id="printBtn" type="button" class="primary">열전사 출력</button>
         </div>
+        <!-- 화면에는 안 보이는 인쇄 전용 영역 -->
+        <pre id="printArea" aria-hidden="true" style="position:absolute; left:-9999px;"></pre>
+
+        <button id="printOSBtn">운영체제로 인쇄</button>
+
     </header>
 
     <main class="stage" role="main">

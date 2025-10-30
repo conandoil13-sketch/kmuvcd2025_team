@@ -262,3 +262,60 @@ button.ghost {
     src: url("/assets/MyFont.otf") format("opentype");
     font-display: swap;
 }
+
+/* 화면에서는 printArea 숨김 */
+@media screen {
+    #printArea {
+        display: none;
+    }
+}
+
+/* 인쇄 시: 텍스트만 꽉 채워서 찍기 */
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    /* 롤지 폭에 맞게(폭은 프린터 드라이버에서 80mm 선택) */
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+        background: #fff;
+    }
+
+    * {
+        visibility: hidden !important;
+    }
+
+    #printArea,
+    #printArea * {
+        visibility: visible !important;
+    }
+
+    #printArea {
+        display: block;
+        font-family: "MyFont", system-ui, sans-serif;
+        /* 네 OTF */
+        font-size: 14pt;
+        /* 프린터 해상도 따라 12~16pt 테스트 */
+        line-height: 1.25;
+        /* 감열지 가독성 */
+        white-space: pre-wrap;
+        /* 줄바꿈 유지 */
+        word-break: break-word;
+        padding: 6mm 4mm;
+        /* 좌우 여백 */
+        width: 72mm;
+        /* 실인쇄 영역(프린터마다 보정) */
+    }
+}
+
+/* 폰트 임베드: GitHub Pages 기준 절대경로 */
+@font-face {
+    font-family: "MyFont";
+    src: url("/kmuvcd2025_team/assets/MyFont.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+}

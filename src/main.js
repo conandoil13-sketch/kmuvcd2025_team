@@ -340,3 +340,22 @@ async function handleUsbPrint() {
         alert("프린터 전송 중 문제 발생: " + err.message);
     }
 }
+// 네 입력박스에서 텍스트만 뽑아 인쇄 영역에 넣고 OS 인쇄창 호출
+document.getElementById('printOSBtn').addEventListener('click', () => {
+    const text = (document.querySelector('#textInput')?.value || '').trim();
+    if (!text) { alert('인쇄할 텍스트가 없습니다.'); return; }
+
+    // 필요 시 전/후 머리말/꼬리말 넣기
+    const ticket = [
+        'Typo Archive',
+        '------------------------------',
+        text,
+        ''
+    ].join('\n');
+
+    const area = document.getElementById('printArea');
+    area.textContent = ticket;
+
+    // 약간의 렌더 타임 후 인쇄
+    requestAnimationFrame(() => window.print());
+});
